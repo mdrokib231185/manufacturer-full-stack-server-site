@@ -18,11 +18,17 @@ async function run() {
   try {
     await client.connect();
     const productsCollection = client.db("assignment-12").collection('products');
+    const bookingCollection = client.db("assignment-12").collection('booking');
 
     app.get("/products", async (req, res) => {
       const product = await productsCollection.find().toArray();
       res.send(product);
     });
+    app.post('/booking', async (req, res) => {
+      const booking = req.body
+      const result = await bookingCollection.insertOne(booking)
+      res.send(result)
+    })
         
         
     app.get("/products/:id", async (req, res) => {
