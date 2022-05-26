@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const app = express();
+// const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -41,18 +42,51 @@ async function run() {
       .db("assignment-12")
       .collection("products");
     const bookingCollection = client.db("assignment-12").collection("booking");
+    const reviewCollection = client.db("assignment-12").collection("review");
     const userCollection = client.db("assignment-12").collection("users");
+    const profileCollection = client.db("assignment-12").collection("profile");
 
     app.get("/products", async (req, res) => {
       const product = await productsCollection.find().toArray();
       res.send(product);
     });
 
+    app.get("/review", async (req, res) => {
+      const review = await reviewCollection.find().toArray();
+      res.send(review);
+    });
+
+
+    app.get("/profile", async (req, res) => {
+      const review = await profileCollection.find().toArray();
+      res.send(review);
+    });
+
+  app.post("/review", async (req, res) => {
+    const newProduct = req.body;
+    const result = await reviewCollection.insertOne(newProduct);
+    res.send(result);
+  });
+    // app.post("/create-payment-intent",  async (req, res) => {
+    //   const service = req.body;
+    //   const price = service.price;
+    //   const amount = price * 100;
+    //   const paymentIntent = await stripe.paymentIntents.create({
+    //     amount: amount,
+    //     currency: "usd",
+    //     payment_method_types: ["card"],
+    //   });
+    //   res.send({ clientSecret: paymentIntent.client_secret });
+    // });
+
+
+
     app.post("/products", async (req, res) => {
       const newProduct = req.body;
       const result = await productsCollection.insertOne(newProduct);
       res.send(result);
     });
+  
 
     app.get("/user", verifyJWT, async (req, res) => {
       const user = await userCollection.find().toArray();
@@ -120,11 +154,18 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/booking/:id", verifyJWT, async (req, res) => {
-     const id= req.params._id
+    app.delete("/booking/:id", async (req, res) => {
+     const id= req.params.id
      const query = { _id: ObjectId(id) }
-      const filter={query: query}
-      const result = await bookingCollection.deleteOne(filter);
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+    app.get("/booking/:id", async (req, res) => {
+     const id= req.params.id
+     const query = { _id: ObjectId(id) }
+      const result = await bookingCollection.findOne(query);
       res.send(result);
     });
 
